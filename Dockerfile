@@ -2,7 +2,7 @@
 FROM golang:1.20-alpine
 
 # Set up work directory
-WORKDIR /app
+WORKDIR /api
 
 # Copy and download dependencies
 COPY go.mod go.sum ./
@@ -12,7 +12,7 @@ RUN go mod download
 COPY . .
 
 # Build the app
-RUN go build -o main ./cmd/app
+RUN go build -o main ./cmd/api
 
 # Expose port and run
 EXPOSE 8080 6060

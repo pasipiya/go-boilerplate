@@ -17,15 +17,20 @@ This is a boilerplate Go project for RESTful API applications, complete with log
 2. Install dependencies:
 
    ```bash
+   go mod tidy
    go mod download
 
 3. Run Applicartion
 
     ```bash
-    go run cmd/app/main.go
+    go run cmd/api/main.go
 
 4. Run with docker
 
    ```bash
-    docker build -t pasipiya-go-boilerplate .
-    docker run -p 8080:8080 pasipiya-go-boilerplate
+    docker build -t go-boilerplate .
+    docker run -p 8080:8080 go-boilerplate
+
+## API Documentation
+   ```bash
+   http://localhost:8080/swagger/index.html#/

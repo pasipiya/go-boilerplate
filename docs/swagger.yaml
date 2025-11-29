@@ -1,0 +1,32 @@
+basePath: /
+definitions:
+  models.HealthResponse:
+    properties:
+      db:
+        type: string
+      status:
+        type: string
+      version:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API documentation for Maruoi AutoHub
+  title: Maruoi AutoHub API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: API and DB health info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HealthResponse'
+      summary: Health check endpoint
+      tags:
+      - Health
+swagger: "2.0"
