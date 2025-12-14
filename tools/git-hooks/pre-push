@@ -4,19 +4,25 @@ set -euo pipefail
 echo "🚀 Running pre-push checks..."
 
 #######################################
+# Disable Go coverage redesign explicitly
+#######################################
+export GODEBUG=coverageredesign=0
+unset GOEXPERIMENT
+
+#######################################
 # 1. Full lint
 #######################################
 echo "🔍 Running golangci-lint..."
 golangci-lint run
 
 #######################################
-# 2. Unit tests with coverage
+# 2. Unit tests with coverage (classic mode)
 #######################################
 echo "🧪 Running unit tests with coverage..."
 go test ./... -coverprofile=coverage.out
 
 #######################################
-# 3. Enforce minimum coverage (optional)
+# 3. Enforce minimum coverage
 #######################################
 MIN_COVERAGE=80
 
