@@ -1,41 +1,44 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-echo "Running pre-push checks..."
+echo "🚀 Running pre-push checks..."
 
-# 1. Full linter
-echo "Running golangci-lint..."
+#######################################
+# 1. Full lint
+#######################################
+echo "🔍 Running golangci-lint..."
 golangci-lint run
-if [ $? -ne 0 ]; then
-    echo "Linting failed."
-    exit 1
-fi
 
-# 2. Run tests with coverage
-echo "Running unit tests..."
+#######################################
+# 2. Unit tests with coverage
+#######################################
+echo "🧪 Running unit tests with coverage..."
 go test ./... -coverprofile=coverage.out
-if [ $? -ne 0 ]; then
-    echo "Tests failed."
-    exit 1
-fi
 
-# 3. Optional: enforce minimum coverage (e.g., 80%)
+#######################################
+# 3. Enforce minimum coverage (optional)
+#######################################
 MIN_COVERAGE=80
-COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}' | cut -d'.' -f1)
 
-echo "Test coverage: $COVERAGE%"
+TOTAL_COVERAGE=$(go tool cover -func=coverage.out \
+  | awk '/^total:/ { sub(/%/, "", $3); print int($3) }')
 
-if [ "$COVERAGE" -lt "$MIN_COVERAGE" ]; then
-    echo "Coverage threshold not met (required: ${MIN_COVERAGE}%)"
+echo "📊 Total test coverage: ${TOTAL_COVERAGE}%"
+
+if [ "$TOTAL_COVERAGE" -lt "$MIN_COVERAGE" ]; then
+    echo "❌ Coverage threshold not met (required: ${MIN_COVERAGE}%)"
     exit 1
 fi
 
-# 4. Validate build
-echo "Building project..."
+#######################################
+# 4. Build validation
+#######################################
+echo "🏗️ Building application..."
 go build ./cmd/app
-if [ $? -ne 0 ]; then
-    echo "Build failed."
-    exit 1
-fi
 
-echo "Pre-push checks passed!"
+#######################################
+# Cleanup
+#######################################
+rm -f coverage.out
+
+echo "✅ Pre-push checks passed!"
