@@ -1,8 +1,8 @@
 package services
 
 import (
-	"go-boilerplate/internal/models"
-	"go-boilerplate/internal/repositories"
+	models "go-boilerplate/internal/health/model"
+	repositories "go-boilerplate/internal/health/repository"
 )
 
 type HealthService struct {

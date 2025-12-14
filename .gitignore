@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+cmd/app/app
 
 # Output of `go build`
 *.out

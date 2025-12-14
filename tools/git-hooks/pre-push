@@ -1,0 +1,41 @@
+#!/bin/bash
+set -e
+
+echo "Running pre-push checks..."
+
+# 1. Full linter
+echo "Running golangci-lint..."
+golangci-lint run
+if [ $? -ne 0 ]; then
+    echo "Linting failed."
+    exit 1
+fi
+
+# 2. Run tests with coverage
+echo "Running unit tests..."
+go test ./... -coverprofile=coverage.out
+if [ $? -ne 0 ]; then
+    echo "Tests failed."
+    exit 1
+fi
+
+# 3. Optional: enforce minimum coverage (e.g., 80%)
+MIN_COVERAGE=80
+COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}' | cut -d'.' -f1)
+
+echo "Test coverage: $COVERAGE%"
+
+if [ "$COVERAGE" -lt "$MIN_COVERAGE" ]; then
+    echo "Coverage threshold not met (required: ${MIN_COVERAGE}%)"
+    exit 1
+fi
+
+# 4. Validate build
+echo "Building project..."
+go build ./cmd/app
+if [ $? -ne 0 ]; then
+    echo "Build failed."
+    exit 1
+fi
+
+echo "Pre-push checks passed!"

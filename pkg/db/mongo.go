@@ -2,44 +2,25 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"go-boilerplate/internal/config"
+	"go-boilerplate/config"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func ConnectMongo(cfg config.MongoConfig) (*mongo.Client, error) {
-	// Build URI: supports BOTH with and without authentication
-	var uri string
-
-	if cfg.User != "" && cfg.Pass != "" {
-		// Authenticated
-		uri = fmt.Sprintf(
-			"mongodb://%s:%s@%s:%s/%s?authSource=admin",
-			cfg.User,
-			cfg.Pass,
-			cfg.Host,
-			cfg.Port,
-			cfg.Database,
-		)
-	} else {
-		// No authentication
-		uri = fmt.Sprintf(
-			"mongodb://%s:%s/%s",
-			cfg.Host,
-			cfg.Port,
-			cfg.Database,
-		)
-	}
-
 	clientOpts := options.Client().
-		ApplyURI(uri).
-		SetMinPoolSize(cfg.PoolMin).
-		SetMaxPoolSize(cfg.PoolMax)
+		ApplyURI(cfg.ConnectionURL).
+		SetMaxPoolSize(uint64(cfg.MaxPoolSize)).
+		SetMinPoolSize(uint64(cfg.MinPoolSize)).
+		SetServerSelectionTimeout(time.Duration(cfg.ServerSelectionTimeout) * time.Second).
+		SetMaxConnIdleTime(time.Duration(cfg.MaxConnectionIdleTime) * time.Second).
+		SetConnectTimeout(time.Duration(cfg.ConnectTimeout) * time.Second).
+		SetSocketTimeout(time.Duration(cfg.SocketTimeout) * time.Second)
 
+	// Global context timeout — 10s is good for initial connect
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -48,6 +29,7 @@ func ConnectMongo(cfg config.MongoConfig) (*mongo.Client, error) {
 		return nil, err
 	}
 
+	// Verify connectivity
 	if err := client.Ping(ctx, nil); err != nil {
 		return nil, err
 	}

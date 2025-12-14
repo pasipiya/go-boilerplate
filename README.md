@@ -1,36 +1,128 @@
-# Pasipiya Go boilerplate
+# SES Go Boilerplate
 
-This is a boilerplate Go project for RESTful API applications, complete with logging, configuration management, and a Dockerfile for containerization.
+A clean, scalable boilerplate for Go services with REST APIs, domain-driven structure, background workers, adapters, Git hooks, Swagger, and Makefile automation.
 
-## Structure
+Project Structure
+go-boilerplate/
+│
+├── cmd/
+│ └── app/
+│ ├── main.go
+│ └── docs/ # Swagger documentation
+│
+├── internal/
+│ ├── app/
+│ │ ├── bootstrap/ # App initialization (DI, mongo, server)
+│ │ ├── container.go # Dependency injection container
+│ │ └── routes.go # Registers all domain routes
+│ │
+│ ├── health/ # Example domain module
+│ │ ├── controller/
+│ │ ├── model/
+│ │ ├── processor/
+│ │ ├── repository/
+│ │ ├── routes/
+│ │ └── service/
+│ │
+│ ├── workers/ # Background workers (MQTT, RabbitMQ, cron)
+│ └── telemetry_worker.go
+│
+├── config/
+│ ├── config.go # Unified config loader (JSON-based)
+│ └── app.config.json # Primary config file
+│
+├── pkg/
+│ ├── db/ # MongoDB connector
+│ │ └── mongo.go
+│ │
+│ ├── redis/ # redis connector
+│ │ ├── redis.go
+│ │ └── helpers.go
+│ │
+│ ├── rabbitmq/ # rabbitmq connector
+│ │ └── rabbitmq.go
+│ │
+│ ├── logger/ # Centralized logger
+│ │ └── logger.go
+│ │
+│ └── utils/ # Shared helper utilities
+│
+├── tools/
+│ └── git-hooks/
+│ ├── install.sh
+│ ├── pre-commit
+│ └── pre-push
+│
+├── tests/ # Optional integration tests
+│
+├── .golangci.yml
+├── .gitignore
+├── Dockerfile
+├── Makefile
+└── README.md
 
-- `cmd/` contains the main application entry point.
-- `config/` handles app configuration.
-- `internal/` contains internal packages, such as server setup, handlers, services, and repositories.
-- `pkg/` holds reusable packages like `logger`.
-- `scripts/` includes setup and deployment scripts.
-- `tests/` for integration and unit tests.
+## Features
 
-## Getting Started
+- Organized domain-based architecture
+- Clean separation: controller → service → repository
+- Background workers for ingestion pipelines
+- Adapters for MongoDB, Redis, RabbitMQ, MQTT
+- Built-in Swagger generation
+- Built-in Git hooks (linting, formatting, testing before push)
+- Makefile for build/lint/test automation
+- Easy to extend for new domains
 
-1. Clone the repository.
-2. Install dependencies:
+## Requirements
 
-   ```bash
-   go mod tidy
-   go mod download
+- Go 1.21+
+- MongoDB / Redis (optional)
+- golangci-lint
+- swag (Swagger generator)
 
-3. Run Applicartion
+## Run Application
 
-    ```bash
-    go run cmd/api/main.go
+```bash
+go run ./cmd/app
+make build
+Run tests:
+make test
 
-4. Run with docker
+# Generate Swagger
+swag init -g cmd/app/main.go -o cmd/app/docs
 
-   ```bash
-    docker build -t go-boilerplate .
-    docker run -p 8080:8080 go-boilerplate
+# Git Hooks Setup
+make hooks-install
+
+# Run with docker
+docker build -t go-boilerplate .
+docker run -p 8080:8080 go-boilerplate
+```
 
 ## API Documentation
-   ```bash
-   http://localhost:8080/swagger/index.html#/
+
+```bash
+swag init -g cmd/app/main.go -o cmd/app/docs
+http://localhost:8080/swagger/index.html#/
+```
+
+## Adding a New Domain
+
+Create a folder:
+
+internal/<domain>/
+controller/
+model/
+processor/
+repository/
+routes/
+service/
+
+Then register the domain in:
+
+internal/app/container.go
+
+internal/app/routes.go
+
+## License
+
+MIT

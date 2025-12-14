@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 
-	"go-boilerplate/internal/services"
+	services "go-boilerplate/internal/health/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,8 +22,8 @@ func NewHealthController(service *services.HealthService) *HealthController {
 // @Tags Health
 // @Produce json
 // @Success 200 {object} models.HealthResponse
-// @Router /health [get]
-func (h *HealthController) Health(c *gin.Context) {
+// @Router /api/health [get]
+func (h *HealthController) HealthCheck(c *gin.Context) {
 	res := h.service.CheckHealth()
 	c.JSON(http.StatusOK, res)
 }
