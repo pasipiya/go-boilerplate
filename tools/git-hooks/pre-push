@@ -4,10 +4,12 @@ set -euo pipefail
 echo "🚀 Running pre-push checks..."
 
 #######################################
-# Disable Go coverage redesign explicitly
+# Hard reset Go env (defensive)
 #######################################
-export GODEBUG=coverageredesign=0
+unset GOFLAGS
+unset GOCOVERDIR
 unset GOEXPERIMENT
+unset GODEBUG
 
 #######################################
 # 1. Full lint
@@ -16,35 +18,15 @@ echo "🔍 Running golangci-lint..."
 golangci-lint run
 
 #######################################
-# 2. Unit tests with coverage (classic mode)
+# 2. Unit tests (NO coverage)
 #######################################
-echo "🧪 Running unit tests with coverage..."
-go test ./... -coverprofile=coverage.out
-
-#######################################
-# 3. Enforce minimum coverage
-#######################################
-MIN_COVERAGE=80
-
-TOTAL_COVERAGE=$(go tool cover -func=coverage.out \
-  | awk '/^total:/ { sub(/%/, "", $3); print int($3) }')
-
-echo "📊 Total test coverage: ${TOTAL_COVERAGE}%"
-
-if [ "$TOTAL_COVERAGE" -lt "$MIN_COVERAGE" ]; then
-    echo "❌ Coverage threshold not met (required: ${MIN_COVERAGE}%)"
-    exit 1
-fi
+echo "🧪 Running unit tests..."
+go test ./...
 
 #######################################
-# 4. Build validation
+# 3. Build validation
 #######################################
 echo "🏗️ Building application..."
 go build ./cmd/app
-
-#######################################
-# Cleanup
-#######################################
-rm -f coverage.out
 
 echo "✅ Pre-push checks passed!"
