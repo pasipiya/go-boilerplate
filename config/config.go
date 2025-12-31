@@ -1,35 +1,69 @@
 package config
 
 import (
-	"log"
+	"encoding/json"
+	"fmt"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
-// Config struct holds the configuration variables
 type Config struct {
-	ServerPort string
-	PprofPort  string
+	Environment string         `json:"environment"`
+	Server      ServerConfig   `json:"server_config"`
+	Mongo       MongoConfig    `json:"mongo_config"`
+	RabbitMQ    RabbitMQConfig `json:"rabbitmq_config"`
+	Redis       RedisConfig    `json:"redis_config"`
 }
 
-// LoadConfig loads environment variables from the .env file and returns a Config struct
-func LoadConfig() *Config {
-	// Load .env file, ignore error if it’s missing but log if there’s an actual error loading
-	if err := godotenv.Load(); err != nil {
-		log.Printf("Warning: Could not load .env file: %v\n", err)
-	}
-
-	return &Config{
-		ServerPort: getEnv("SERVER_PORT", "8080"),
-		PprofPort:  getEnv("PPROF_PORT", "6060"),
-	}
+type ServerConfig struct {
+	Port    int    `json:"port"`
+	AppName string `json:"app_name"`
 }
 
-// getEnv retrieves the value of the environment variable `key` or returns `fallback` if not set
-func getEnv(key, fallback string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
+type MongoConfig struct {
+	ConnectionURL          string `json:"connection_url"`
+	DatabaseName           string `json:"database_name"`
+	ServerSelectionTimeout int    `json:"server_selection_timeout"`
+	MaxPoolSize            int    `json:"max_pool_size"`
+	MinPoolSize            int    `json:"min_pool_size"`
+	MaxConnectionIdleTime  int    `json:"max_connection_ideal_time"`
+	ConnectTimeout         int    `json:"connect_timeout"`
+	SocketTimeout          int    `json:"socket_timeout"`
+}
+
+type RabbitMQConfig struct {
+	Protocol               string `json:"protocol"`
+	BrokerHost             string `json:"broker_host"`
+	BrokerPort             int    `json:"broker_port"`
+	Username               string `json:"username"`
+	Password               string `json:"password"`
+	WaitDurationForPublish string `json:"wait_duration_for_publish"`
+	QoSLevel               int    `json:"qos_level"`
+}
+
+type RedisConfig struct {
+	Host          string `json:"host"`
+	Port          int    `json:"port"`
+	Username      string `json:"username"`
+	Password      string `json:"password"`
+	DB            int    `json:"db"`
+	PoolSize      int    `json:"pool_size"`
+	MinIdealConns int    `json:"min_ideal_conns"`
+	UseTLS        bool   `json:"use_tls"`
+}
+
+// Load config/app.config.json
+func LoadConfig() (*Config, error) {
+	const configPath = "config/app.config.json"
+
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config file %s: %w", configPath, err)
 	}
-	return fallback
+
+	var cfg Config
+	if err := json.Unmarshal(data, &cfg); err != nil {
+		return nil, fmt.Errorf("failed to parse config file: %w", err)
+	}
+
+	return &cfg, nil
 }

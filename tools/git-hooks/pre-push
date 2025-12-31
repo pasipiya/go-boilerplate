@@ -1,0 +1,32 @@
+#!/bin/bash
+set -euo pipefail
+
+echo "🚀 Running pre-push checks..."
+
+#######################################
+# Hard reset Go env (defensive)
+#######################################
+unset GOFLAGS
+unset GOCOVERDIR
+unset GOEXPERIMENT
+unset GODEBUG
+
+#######################################
+# 1. Full lint
+#######################################
+echo "🔍 Running golangci-lint..."
+golangci-lint run
+
+#######################################
+# 2. Unit tests (NO coverage)
+#######################################
+echo "🧪 Running unit tests..."
+go test ./...
+
+#######################################
+# 3. Build validation
+#######################################
+echo "🏗️ Building application..."
+go build ./cmd/app
+
+echo "✅ Pre-push checks passed!"

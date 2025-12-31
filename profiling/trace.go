@@ -1,6 +1,7 @@
 package profiling
 
 import (
+	"go-boilerplate/pkg/logger"
 	"log"
 	"os"
 	"runtime/trace"
@@ -25,5 +26,8 @@ func StartTrace() *os.File {
 // StopTrace stops tracing.
 func StopTrace(f *os.File) {
 	trace.Stop()
-	f.Close()
+	if err := f.Close(); err != nil {
+		logger.Warn("failed to close trace file: " + err.Error())
+	}
+
 }

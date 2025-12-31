@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# 1. Run gofmt
+echo "Formatting code with gofmt..."
+UNFORMATTED=$(gofmt -l .)
+if [ -n "$UNFORMATTED" ]; then
+    echo "gofmt failed on:"
+    echo "$UNFORMATTED"
+    echo "Run: gofmt -w ."
+    exit 1
+fi
+
+# 2. Lint
+echo "Running golangci-lint..."
+golangci-lint run
+
+# 3. Vet checks
+echo "Running go vet..."
+go vet ./...
+
+echo "✅ Pre-commit checks passed!"

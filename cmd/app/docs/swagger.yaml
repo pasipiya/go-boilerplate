@@ -16,7 +16,7 @@ info:
   title: Maruoi AutoHub API
   version: "1.0"
 paths:
-  /health:
+  /api/health:
     get:
       description: API and DB health info
       produces:
